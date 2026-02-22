@@ -1,0 +1,12 @@
+{
+  "name": "eval-harness",
+  "version": "0.1.0",
+  "description": "Two-layer LLM evaluation pipeline for AI agent outputs. Heuristic guard + LLM-as-Judge with Self-Refine retry loop.",
+  "author": {
+    "name": "Allan Hall",
+    "email": "jallanhall@gmail.com"
+  },
+  "homepage": "https://github.com/allanhall/eval-harness-plugin",
+  "license": "MIT",
+  "keywords": ["eval", "llm-as-judge", "agent-quality", "guardrails", "self-refine", "reflexion"]
+}
