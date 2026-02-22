@@ -99,7 +99,39 @@ class HeuristicGuard:
         Returns:
             GuardResult with passed status, list of failed checks, and details.
         """
-        raise NotImplementedError("Implement in Red→Green TDD cycle.")
+        failed_checks: list[str] = []
+        detail_parts: list[str] = []
+
+        if self.check_pii:
+            pii_found = self._check_pii(output)
+            if pii_found:
+                failed_checks.append("pii")
+                detail_parts.append(f"PII detected: {', '.join(pii_found)}")
+
+        if self.check_secrets:
+            secrets_found = self._check_secrets(output)
+            if secrets_found:
+                failed_checks.append("secrets")
+                detail_parts.append(f"Secrets detected: {', '.join(secrets_found)}")
+
+        if self.check_profanity:
+            if self._check_profanity(output):
+                failed_checks.append("profanity")
+                detail_parts.append("Profanity detected")
+
+        length_violations = self._check_length(output)
+        if "min_length" in length_violations:
+            failed_checks.append("min_length")
+            detail_parts.append(f"Output too short: {len(output)} < {self.min_length}")
+        if "max_length" in length_violations:
+            failed_checks.append("max_length")
+            detail_parts.append(f"Output too long: {len(output)} > {self.max_length}")
+
+        return GuardResult(
+            passed=len(failed_checks) == 0,
+            failed_checks=failed_checks,
+            details="; ".join(detail_parts),
+        )
 
     def _check_pii(self, output: str) -> list[str]:
         """Scan for PII patterns in output.
@@ -110,7 +142,7 @@ class HeuristicGuard:
         Returns:
             List of PII type names found (e.g. ['email', 'phone_us']).
         """
-        raise NotImplementedError
+        return [name for name, pattern in _PII_PATTERNS.items() if pattern.search(output)]
 
     def _check_secrets(self, output: str) -> list[str]:
         """Scan for exposed secrets and API key patterns.
@@ -121,7 +153,7 @@ class HeuristicGuard:
         Returns:
             List of secret type names found (e.g. ['aws_key']).
         """
-        raise NotImplementedError
+        return [name for name, pattern in _SECRET_PATTERNS.items() if pattern.search(output)]
 
     def _check_profanity(self, output: str) -> bool:
         """Check whether output contains profanity.
@@ -132,7 +164,8 @@ class HeuristicGuard:
         Returns:
             True if profanity detected.
         """
-        raise NotImplementedError
+        output_lower = output.lower()
+        return any(term in output_lower for term in _PROFANITY_TERMS)
 
     def _check_length(self, output: str) -> list[str]:
         """Validate output length against configured min/max bounds.
@@ -143,4 +176,10 @@ class HeuristicGuard:
         Returns:
             List of violated constraint names (e.g. ['min_length']).
         """
-        raise NotImplementedError
+        violations: list[str] = []
+        length = len(output)
+        if self.min_length is not None and length < self.min_length:
+            violations.append("min_length")
+        if self.max_length is not None and length > self.max_length:
+            violations.append("max_length")
+        return violations

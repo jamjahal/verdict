@@ -105,7 +105,55 @@ class RetryLoop:
             LoopResult summarising the full run, including all verdicts and
             whether the loop ultimately passed or was blocked.
         """
-        raise NotImplementedError("Implement in Red→Green TDD cycle.")
+        verdicts: list[JudgeVerdict] = []
+        critique: Optional[str] = None
+        final_output: str = ""
+
+        for attempt in range(1, self.max_retries + 1):
+            # Build prompt — first attempt uses raw task; retries inject critique.
+            if attempt == 1:
+                prompt = task_prompt
+            else:
+                prompt = self._build_retry_prompt(task_prompt, critique, attempt)  # type: ignore[arg-type]
+
+            output = self.agent_fn(prompt, critique)
+            final_output = output
+
+            # Layer 1: fast deterministic guard — skip judge on failure.
+            guard_result = self.guard.evaluate(output)
+            if not guard_result.passed:
+                critique = (
+                    f"Output failed safety checks: {guard_result.details}. "
+                    "Please revise to remove any PII, secrets, or disallowed content."
+                )
+                logger.debug("Attempt %d blocked by heuristic guard: %s", attempt, guard_result.details)
+                if attempt == self.max_retries:
+                    return self._handle_blocked(verdicts, final_output)
+                continue
+
+            # Layer 2: LLM judge — semantic quality evaluation.
+            raw_judge_output = self.judge_fn(task_prompt, output)
+            verdict = self.parser.parse(raw_judge_output)
+            verdicts.append(verdict)
+
+            if verdict.passed:
+                logger.debug("Attempt %d passed judge evaluation.", attempt)
+                return LoopResult(
+                    final_output=final_output,
+                    passed=True,
+                    attempts=attempt,
+                    verdicts=verdicts,
+                    blocked=False,
+                )
+
+            critique = verdict.critique
+            logger.debug("Attempt %d failed judge. Critique: %s", attempt, critique)
+
+            if attempt == self.max_retries:
+                return self._handle_blocked(verdicts, final_output)
+
+        # Should never reach here, but satisfy type checker.
+        return self._handle_blocked(verdicts, final_output)  # pragma: no cover
 
     def _build_retry_prompt(self, task_prompt: str, critique: str, attempt: int) -> str:
         """Construct the retry prompt with injected critique.
@@ -122,7 +170,13 @@ class RetryLoop:
         Returns:
             Full prompt string for the next agent call.
         """
-        raise NotImplementedError
+        return (
+            f"{task_prompt}\n\n"
+            f"--- Evaluator feedback (attempt {attempt - 1}) ---\n"
+            f"{critique}\n"
+            f"---\n"
+            f"Please address the feedback above and try again."
+        )
 
     def _handle_blocked(self, verdicts: list[JudgeVerdict], final_output: str) -> LoopResult:
         """Handle the case where max_retries is exhausted without a PASS.
@@ -137,4 +191,25 @@ class RetryLoop:
         Returns:
             LoopResult with blocked=True and a failure summary.
         """
-        raise NotImplementedError
+        if verdicts and verdicts[-1].critique:
+            last_critique = verdicts[-1].critique
+        else:
+            last_critique = "Safety checks failed on all attempts."
+
+        logger.warning(
+            "RetryLoop blocked after %d attempts. Last critique: %s",
+            self.max_retries,
+            last_critique,
+        )
+
+        return LoopResult(
+            final_output=final_output,
+            passed=False,
+            attempts=self.max_retries,
+            verdicts=verdicts,
+            blocked=True,
+            failure_reason=(
+                f"Max retries ({self.max_retries}) exhausted. "
+                f"Last critique: {last_critique}"
+            ),
+        )

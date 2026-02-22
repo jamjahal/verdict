@@ -110,7 +110,27 @@ class JudgeOutputParser:
         Raises:
             ValueError: If the EVAL_RESULT block is missing or malformed.
         """
-        raise NotImplementedError("Implement in Red→Green TDD cycle.")
+        if not raw_output:
+            raise ValueError("EVAL_RESULT block not found: empty input")
+
+        block = self._extract_block(raw_output)
+        scores = self._parse_scores(block)
+
+        verdict_match = re.search(r"^verdict:\s*(PASS|FAIL)", block, re.MULTILINE)
+        if not verdict_match:
+            raise ValueError("Missing required field: verdict")
+        passed = verdict_match.group(1) == "PASS"
+
+        # Critique is only surfaced on FAIL — suppress it on PASS to keep
+        # the contract clean (critique is the retry signal, not a footnote).
+        critique = None if passed else self._parse_critique(block)
+
+        return JudgeVerdict(
+            scores=scores,
+            passed=passed,
+            critique=critique,
+            raw_output=raw_output,
+        )
 
     def _extract_block(self, raw_output: str) -> str:
         """Extract the EVAL_RESULT block from raw judge output.
@@ -124,7 +144,14 @@ class JudgeOutputParser:
         Raises:
             ValueError: If markers are not found.
         """
-        raise NotImplementedError
+        match = re.search(
+            r"EVAL_RESULT\n(.*?)\nEND_EVAL_RESULT",
+            raw_output,
+            re.DOTALL,
+        )
+        if not match:
+            raise ValueError("EVAL_RESULT block not found in judge output")
+        return match.group(1)
 
     def _parse_scores(self, block: str) -> RubricScore:
         """Parse dimension scores and weighted score from the EVAL_RESULT block.
@@ -138,7 +165,37 @@ class JudgeOutputParser:
         Raises:
             ValueError: If any required score field is missing or out of range.
         """
-        raise NotImplementedError
+        required_dims = [
+            "task_completion",
+            "factual_groundedness",
+            "coherence",
+            "relevance",
+            "safety",
+        ]
+        scores: dict[str, int] = {}
+        for dim in required_dims:
+            match = re.search(rf"^{dim}:\s*(\d+)", block, re.MULTILINE)
+            if not match:
+                raise ValueError(f"Missing required field: {dim}")
+            val = int(match.group(1))
+            if not 1 <= val <= 5:
+                raise ValueError(
+                    f"Score {dim}={val} out of range (must be 1–5)"
+                )
+            scores[dim] = val
+
+        ws_match = re.search(r"^weighted_score:\s*([\d.]+)", block, re.MULTILINE)
+        if not ws_match:
+            raise ValueError("Missing required field: weighted_score")
+
+        return RubricScore(
+            task_completion=scores["task_completion"],
+            factual_groundedness=scores["factual_groundedness"],
+            coherence=scores["coherence"],
+            relevance=scores["relevance"],
+            safety=scores["safety"],
+            weighted_score=float(ws_match.group(1)),
+        )
 
     def _parse_critique(self, block: str) -> Optional[str]:
         """Extract the critique text from the EVAL_RESULT block.
@@ -147,6 +204,15 @@ class JudgeOutputParser:
             block: The extracted EVAL_RESULT content string.
 
         Returns:
-            Critique string if present, None otherwise.
+            Critique string if present and non-empty, None otherwise.
         """
-        raise NotImplementedError
+        match = re.search(
+            r"^critique:\s*\|\n(.*?)(?=\n\S|\Z)",
+            block,
+            re.MULTILINE | re.DOTALL,
+        )
+        if not match:
+            return None
+        lines = match.group(1).splitlines()
+        critique = "\n".join(line.strip() for line in lines).strip()
+        return critique or None
