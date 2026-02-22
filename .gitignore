@@ -112,10 +112,14 @@ Temporary Items
 
 # Eval logs may contain agent outputs with sensitive content
 logs/
+!logs/.gitkeep
 *.jsonl
 
 # Local rubric overrides (keep config/rubric.yaml but not personal overrides)
 config/rubric.local.yaml
+
+# Generated reports and build artifacts
+VALIDATION_REPORT.md
 
 # Cython debug
 cython_debug/

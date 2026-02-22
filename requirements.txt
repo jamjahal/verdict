@@ -1,0 +1,5 @@
+# Eval Harness — Core dependencies
+# Install: pip install -r requirements.txt
+
+pyyaml>=6.0
+pytest>=8.0
