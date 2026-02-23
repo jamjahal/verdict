@@ -6,6 +6,10 @@
 # Research (Self-Refine, Reflexion) shows diminishing returns beyond 3.
 max_retries: 3
 
+# Model used for the LLM-as-Judge API call.
+# Sonnet is fast and accurate enough for evaluation; switch to opus for higher stakes.
+judge_model: claude-sonnet-4-5-20250929
+
 # Minimum weighted score for an overall PASS verdict.
 overall_pass_threshold: 3.0
 

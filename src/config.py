@@ -45,6 +45,7 @@ _DEFAULT_MIN_PASS: dict[str, int] = {
 
 _DEFAULT_MAX_RETRIES = 3
 _DEFAULT_PASS_THRESHOLD = 3.0
+_DEFAULT_JUDGE_MODEL = "claude-sonnet-4-5-20250929"
 
 
 # ---------------------------------------------------------------------------
@@ -60,6 +61,7 @@ class EvalConfig:
         overall_pass_threshold: Minimum weighted score for a PASS verdict.
         weights: Dimension name → weight mapping (must sum to 1.0).
         min_pass_scores: Dimension name → minimum acceptable score (1–5).
+        judge_model: Anthropic model ID for the LLM-as-Judge API call.
         check_pii: Enable PII detection in heuristic guard.
         check_secrets: Enable secrets detection in heuristic guard.
         check_profanity: Enable profanity filter in heuristic guard.
@@ -69,6 +71,7 @@ class EvalConfig:
     overall_pass_threshold: float = _DEFAULT_PASS_THRESHOLD
     weights: dict[str, float] = field(default_factory=lambda: dict(_DEFAULT_WEIGHTS))
     min_pass_scores: dict[str, int] = field(default_factory=lambda: dict(_DEFAULT_MIN_PASS))
+    judge_model: str = _DEFAULT_JUDGE_MODEL
     check_pii: bool = True
     check_secrets: bool = True
     check_profanity: bool = True
@@ -124,6 +127,7 @@ def load_config(config_path: str) -> EvalConfig:
     # --- Extract values with defaults ---
     max_retries = raw.get("max_retries", _DEFAULT_MAX_RETRIES)
     overall_pass_threshold = raw.get("overall_pass_threshold", _DEFAULT_PASS_THRESHOLD)
+    judge_model = raw.get("judge_model", _DEFAULT_JUDGE_MODEL)
 
     # Dimensions
     dim_raw = raw.get("dimensions", {})
@@ -151,6 +155,7 @@ def load_config(config_path: str) -> EvalConfig:
         overall_pass_threshold=overall_pass_threshold,
         weights=weights,
         min_pass_scores=min_pass_scores,
+        judge_model=judge_model,
         check_pii=check_pii,
         check_secrets=check_secrets,
         check_profanity=check_profanity,

@@ -18,9 +18,9 @@
         "matcher": "Task",
         "hooks": [
           {
-            "type": "prompt",
-            "prompt": "An agent subagent (Task tool) just completed. Review the tool result. If it contains a substantive agent output (not a system message, tool call result, or short conversational reply), trigger the eval-harness pipeline by launching the judge-agent to evaluate it. Skip evaluation for: empty results, error messages, and outputs under 20 words. If evaluation is triggered, follow the eval-methodology skill.",
-            "timeout": 60
+            "type": "command",
+            "command": "python3 ${CLAUDE_PLUGIN_ROOT}/hooks/scripts/judge_eval.py",
+            "timeout": 120
           }
         ]
       }
