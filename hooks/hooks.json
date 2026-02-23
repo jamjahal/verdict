@@ -7,7 +7,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "python3 ${CLAUDE_PLUGIN_ROOT}/hooks/scripts/env_guard.py",
+            "command": "python3 \"${CLAUDE_PLUGIN_ROOT}/hooks/scripts/env_guard.py\"",
             "timeout": 10
           }
         ]
@@ -19,7 +19,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "python3 ${CLAUDE_PLUGIN_ROOT}/hooks/scripts/judge_eval.py",
+            "command": "python3 \"${CLAUDE_PLUGIN_ROOT}/hooks/scripts/judge_eval.py\"",
             "timeout": 120
           }
         ]
