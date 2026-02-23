@@ -23,7 +23,7 @@ import os
 PLUGIN_ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 sys.path.insert(0, PLUGIN_ROOT)
 
-from src.heuristic_guard import HeuristicGuard
+from src.config import load_config
 
 
 def main() -> None:
@@ -34,7 +34,10 @@ def main() -> None:
     else:
         text = sys.stdin.read()
 
-    guard = HeuristicGuard()
+    # Load config from rubric.yaml — drives which checks are enabled.
+    config_path = os.path.join(PLUGIN_ROOT, "config", "rubric.yaml")
+    config = load_config(config_path)
+    guard = config.build_guard()
     result = guard.evaluate(text)
 
     output = {
