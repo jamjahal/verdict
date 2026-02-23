@@ -8,7 +8,7 @@ Generate a summary report from the eval log.
 
 Load the eval log: !`test -f ${CLAUDE_PLUGIN_ROOT}/logs/eval_log.jsonl && wc -l ${CLAUDE_PLUGIN_ROOT}/logs/eval_log.jsonl || echo "NO_LOG"`
 
-If no log exists, explain that no eval events have been recorded yet and suggest running `/eval:run` or enabling the PostToolUse hook.
+If no log exists, explain that no eval events have been recorded yet and suggest running `/eval-harness:eval-run` or enabling the PostToolUse hook.
 
 Otherwise, read `${CLAUDE_PLUGIN_ROOT}/logs/eval_log.jsonl` and compute:
 

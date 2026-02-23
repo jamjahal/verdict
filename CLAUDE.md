@@ -26,7 +26,7 @@ tests/        ← mirrors src/ — pytest suite
 config/       ← rubric.yaml and YAML configs
 agents/       ← judge-agent subagent
 skills/       ← eval-methodology skill
-commands/     ← /eval:run /eval:configure /eval:report
+commands/     ← /eval-harness:eval-run /eval-harness:eval-configure /eval-harness:eval-report
 hooks/        ← PostToolUse eval + PreToolUse env-guard
 docs/         ← design docs, ADRs
 ```

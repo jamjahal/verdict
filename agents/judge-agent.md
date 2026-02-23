@@ -21,8 +21,8 @@ A prior evaluation failed and the primary agent has produced a new output. The j
 </example>
 
 <example>
-Context: The /eval:run command has been invoked manually.
-user: "/eval:run"
+Context: The /eval-harness:eval-run command has been invoked manually.
+user: "/eval-harness:eval-run"
 assistant: "Running the judge-agent against the most recent output."
 <commentary>
 Manual evaluation trigger. Judge-agent always handles the evaluation leg of the pipeline.

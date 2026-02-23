@@ -4,7 +4,7 @@ Writes one JSON object per line (JSONL) to a log file. Each entry records
 the full eval pipeline result: task prompt, pass/fail, attempt count, rubric
 scores, critique, and blocking status.
 
-Designed to be consumed by the ``/eval:report`` command for trend analysis.
+Designed to be consumed by the ``/eval-harness:eval-report`` command for trend analysis.
 """
 
 from __future__ import annotations

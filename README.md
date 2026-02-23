@@ -27,9 +27,9 @@ pip install eval-harness  # coming soon
 ### Plugin commands
 
 ```
-/eval:run              — Evaluate the most recent agent output
-/eval:configure        — Adjust rubric, max_retries, heuristic rules
-/eval:report           — View eval log summary and failure trends
+/eval-harness:eval-run              — Evaluate the most recent agent output
+/eval-harness:eval-configure        — Adjust rubric, max_retries, heuristic rules
+/eval-harness:eval-report           — View eval log summary and failure trends
 ```
 
 ### Python library

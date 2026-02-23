@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""CLI wrapper for the heuristic guard — used by /eval:run and PostToolUse hooks.
+"""CLI wrapper for the heuristic guard — used by /eval-harness:eval-run and PostToolUse hooks.
 
 Reads agent output from stdin (or the first CLI argument) and runs the
 Layer 1 heuristic guard. Prints a JSON result to stdout.

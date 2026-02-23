@@ -49,13 +49,13 @@ max_retries: 3
 overall_pass_threshold: 3.0
 ```
 
-Use `/eval:configure` to adjust settings for the current session without editing the file.
+Use `/eval-harness:eval-configure` to adjust settings for the current session without editing the file.
 
 ---
 
 ## When to Invoke Evaluation
 
-Evaluation runs automatically via the PostToolUse hook after agent outputs. Manual evaluation can be triggered with `/eval:run`.
+Evaluation runs automatically via the PostToolUse hook after agent outputs. Manual evaluation can be triggered with `/eval-harness:eval-run`.
 
 Do **not** invoke the judge-agent for:
 - Short conversational responses (greetings, clarifications)
