@@ -1,0 +1,15 @@
+{
+  "rewrites": [
+    { "source": "/api/(.*)", "destination": "/api/index" }
+  ],
+  "functions": {
+    "api/index.py": {
+      "runtime": "@vercel/python",
+      "maxDuration": 120
+    }
+  },
+  "env": {
+    "EVAL_HARNESS_API_KEY": "@eval-harness-api-key",
+    "ANTHROPIC_API_KEY": "@anthropic-api-key"
+  }
+}
